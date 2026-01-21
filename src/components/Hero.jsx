@@ -1,8 +1,30 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react'
+import { getImagesFromFolder } from '../utils/galleryLoader'
 
 export default function Hero() {
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const heroImages = getImagesFromFolder('hero')
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length)
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [heroImages.length])
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroImages.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length)
+  }
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -31,42 +53,41 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Background with gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950">
-        {/* Abstract geometric patterns */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(197,160,101,0.3)_0%,transparent_50%)]" />
-          <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_80%,rgba(197,160,101,0.2)_0%,transparent_50%)]" />
-        </div>
-
-        {/* Decorative elements */}
-        <motion.div
-          className="absolute top-1/4 right-10 w-64 h-64 border border-gold-500/20 rounded-full"
-          animate={{
-            rotate: 360,
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            rotate: { duration: 30, repeat: Infinity, ease: 'linear' },
-            scale: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 left-10 w-48 h-48 border border-gold-400/20 rounded-full"
-          animate={{
-            rotate: -360,
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            rotate: { duration: 25, repeat: Infinity, ease: 'linear' },
-            scale: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
-          }}
-        />
+      {/* Background con imágenes de la carpeta hero */}
+      <div className="absolute inset-0">
+        {heroImages.length > 0 ? (
+          heroImages.map((img, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: index === currentSlide ? 1 : 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0"
+            >
+              <img
+                src={img.src}
+                alt={`Diseño de cocina ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          ))
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(197,160,101,0.3)_0%,transparent_50%)]" />
+              <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_80%,rgba(197,160,101,0.2)_0%,transparent_50%)]" />
+            </div>
+          </div>
+        )}
+        
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-900/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-900/30 to-primary-900/80" />
       </div>
 
       {/* Content */}
       <motion.div
-        className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center lg:text-left"
+        className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -108,7 +129,7 @@ export default function Hero() {
             {/* CTA Buttons */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              className="flex flex-col sm:flex-row gap-4"
             >
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -117,13 +138,6 @@ export default function Hero() {
               >
                 <span>Explorar Proyectos</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="group flex items-center justify-center space-x-3 border-2 border-white text-white px-8 py-4 font-medium tracking-wider hover:bg-white hover:text-primary-900 transition-all duration-300"
-              >
-                <span>Contáctanos</span>
               </motion.button>
             </motion.div>
 
@@ -152,51 +166,41 @@ export default function Hero() {
               </div>
             </motion.div>
           </div>
-
-          {/* Visual Element */}
-          <motion.div
-            variants={itemVariants}
-            className="hidden lg:block relative"
-          >
-            <motion.div
-              className="relative w-full aspect-square"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 1 }}
-            >
-              {/* Decorative frame */}
-              <div className="absolute inset-0 border-2 border-gold-500/30 transform -rotate-6" />
-              <div className="absolute inset-0 border-2 border-gold-500/30 transform rotate-6" />
-
-              {/* Image placeholder with gradient */}
-              <div className="absolute inset-4 bg-gradient-to-br from-gold-400/20 to-gold-600/20 backdrop-blur-sm flex items-center justify-center">
-                <div className="text-center text-gold-300/50">
-                  <div className="w-32 h-32 mx-auto mb-4 border border-gold-400/30 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-12 h-12" />
-                  </div>
-                  <p className="font-serif text-lg">Diseño Premium</p>
-                </div>
-              </div>
-
-              {/* Floating badges */}
-              <motion.div
-                className="absolute -top-4 -right-4 bg-white/10 backdrop-blur-md px-4 py-2 border border-gold-500/30"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <span className="text-gold-400 text-sm font-medium">Diseñadores de Élite</span>
-              </motion.div>
-              <motion.div
-                className="absolute -bottom-4 -left-4 bg-white/10 backdrop-blur-md px-4 py-2 border border-gold-500/30"
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-              >
-                <span className="text-gold-400 text-sm font-medium">Montajes Impecables</span>
-              </motion.div>
-            </motion.div>
-          </motion.div>
         </div>
       </motion.div>
+
+      {/* Controles del slideshow */}
+      {heroImages.length > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors z-20 hidden lg:flex"
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors z-20 hidden lg:flex"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </button>
+
+          {/* Indicadores */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 z-20">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentSlide
+                    ? 'bg-gold-500 w-8'
+                    : 'bg-white/30 hover:bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Scroll indicator */}
       <motion.div
